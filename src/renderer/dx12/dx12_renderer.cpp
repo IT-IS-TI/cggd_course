@@ -47,7 +47,7 @@ void cg::renderer::dx12_renderer::init()
 	shadow_light->set_z_far(settings->camera_z_far);
 
 	cb.mwpMatrix = camera->get_dxm_mvp_matrix();
-	cb.shadowMatrix = shadow_light->get_dxm_view_matrix();
+	cb.shadowMatrix = shadow_light->get_dxm_mvp_matrix();
 	cb.light.color = float4{0.3f, 0.3f, 1.f, 1.f};
 	cb.light.position = float4{
 		settings->camera_position[0],
@@ -73,7 +73,7 @@ void cg::renderer::dx12_renderer::update()
 	frame_duration = duration.count();
 
 	cb.mwpMatrix = camera->get_dxm_mvp_matrix();
-	cb.shadowMatrix = shadow_light->get_dxm_view_matrix();
+	cb.shadowMatrix = shadow_light->get_dxm_mvp_matrix();
 
 	memcpy(constant_buffer_data_begin, &cb, sizeof(cb));
 }
@@ -405,8 +405,8 @@ void cg::renderer::dx12_renderer::create_pso(const std::string& shader_name)
 	pso_desc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
 	pso_desc.SampleMask = UINT_MAX;
 	pso_desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	// pso_desc.NumRenderTargets = 1;
-	// pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	pso_desc.NumRenderTargets = 1;
+	pso_desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	pso_desc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 	pso_desc.SampleDesc.Count = 1;
 
@@ -596,9 +596,9 @@ void cg::renderer::dx12_renderer::load_assets()
 	D3D12_SHADER_RESOURCE_VIEW_DESC shadow_srv_desc = {};
 	shadow_srv_desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	shadow_srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	shadow_srv_desc.Format = DXGI_FORMAT_R32_UINT;
+	shadow_srv_desc.Format = DXGI_FORMAT_R32_FLOAT;
 	shadow_srv_desc.Texture2D.MipLevels = 1;
-	device->CreateShaderResourceView(nullptr, &shadow_srv_desc, cbv_srv_heap.get_cpu_descriptor_handle(2));
+	device->CreateShaderResourceView(shadow_map.Get(), &shadow_srv_desc, cbv_srv_heap.get_cpu_descriptor_handle(2));
 
 	textures.resize(texture_num);
 	upload_textures.resize(texture_num);

@@ -42,7 +42,7 @@ PSInput VSShadowMap(float4 position : POSITION, float4 normal: NORMAL, float4 am
     result.normal = normal.xyz;
     return result;
 }
-float GetLambertianIntensity(PSInput input, float4 light_position, float4 light_color)
+float4 GetLambertianIntensity(PSInput input, float4 light_position, float4 light_color)
 {
     float3 to_light = light_position.xyz - input.world_position;
     float distance = length(to_light);
